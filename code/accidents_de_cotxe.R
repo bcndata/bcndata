@@ -1,6 +1,6 @@
-##### Directories 
-root <- getwd()
-data_dir <- paste0(root, '/data')
+# ##### Directories 
+root <- '/home/joebrew/Documents/bcn_data'
+data_dir <- paste0(root, '/data/accidents_de_cotxe')
 code_dir <- paste0(root, '/code')
 
 ##### Libraries
@@ -12,8 +12,9 @@ library(ggthemes)
 # options(RCurlOptions = list(cainfo = system.file("CurlSSL", "cacert.pem", package = "RCurl")))
 
 ##### Data read in
-setwd(data_dir)
-csvs <- dir()
+csvs <- dir(data_dir)
+csvs <- csvs[grepl('.csv', csvs)]
+csvs <- paste0(data_dir, '/', csvs)
 results_list <- list()
 hh <- c()
 for (i in 1:length(csvs)){
@@ -31,29 +32,3 @@ for (i in 1:length(csvs)){
 }
 accidents <- do.call('rbind', results_list)
 rm(temp, results_list, csvs, hh, i)
-
-# TIME OF DAY
-tod <- 
-  accidents %>%
-  group_by(Hora.de.dia) %>%
-  summarise(n = n())
-ggplot(data = tod, aes(x = Hora.de.dia, y = n / 5)) +
-  geom_point() +
-  geom_smooth() +
-  theme_bw() +
-  xlab('Hora del dia') +
-  ylab('Accidents per any')
-rm(tod)
-
-# DAY OF WEEK
-dow <- 
-  accidents %>%
-  group_by(Descripció.dia.setmana) %>%
-  summarise(n = n())
-dow$Descripció.dia.setmana <- 
-  factor(as.character(dow$Descripció.dia.setmana),
-         levels = c('Dilluns', 'Dimarts', 'Dimecres', 'Dijous',
-                    'Divendres', 'Dissabte', 'Diumenge'))
-ggplot(data = dow, aes(x = Descripció.dia.setmana, y = n)) +
-  geom_bar(stat = 'identity') +
-  theme_economist()

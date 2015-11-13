@@ -1,0 +1,20 @@
+---
+title: "Template"
+author: "BCN DATA"
+date: "November 13, 2015"
+output:
+  html_document:
+    theme: united
+    toc: yes
+  pdf_document:
+    toc: yes
+  word_document: default
+---
+
+```{r, echo = FALSE}
+# BASIC KNITR OPTIONS
+library(knitr)
+opts_chunk$set(comment = NA, echo = FALSE, warning = FALSE, message = FALSE, results = 'hide')
+options(xtable.comment = FALSE)
+```
+
