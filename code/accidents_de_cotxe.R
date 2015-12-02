@@ -41,9 +41,31 @@ rm(temp, results_list, csvs, hh, i)
 accidents$y <- as.numeric(gsub(',', '.', accidents$Coordenada.UTM..Y.))
 accidents$x <- as.numeric(gsub(',', '.', accidents$Coordenada.UTM..X. ))
 
+# Remove those non-geocoded accidents
+accidents <- accidents[accidents$x != -1 & accidents$y != -1,]
+
 ##### Geographic data
 mapa <- readOGR(paste0(root, '/data/geo/barris'), 'BCN_Barri_SHP')
 
+# GET WORST INTERSECTION
+temp <- accidents %>%
+  group_by(x,y) %>%
+  tally 
+temp <- temp[rev(order(temp$n)),]
+worst <- temp[1,]
+
+plot(mapa)
+points(worst$x, worst$y, pch = 16, col = 'red')
+
+# Convert to lat/lng
+temp_ll <- data.frame(temp)
+coordinates(temp_ll) <- ~x+y
+proj4string(temp_ll)  <- CRS(proj4string(mapa))
+
+temp_ll <- spTransform(temp_ll, CRS("+proj=longlat +datum=WGS84"))
+mapa_ll <- spTransform(mapa, CRS("+proj=longlat +datum=WGS84"))
+worst <- temp_ll[1,]
+points(worst)
 
 #####
 # LOCATION
