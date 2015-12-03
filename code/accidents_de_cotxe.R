@@ -37,6 +37,13 @@ for (i in 1:length(csvs)){
 accidents <- do.call('rbind', results_list)
 rm(temp, results_list, csvs, hh, i)
 
+# Get a data
+accidents$date <-
+  as.Date(paste(accidents$NK.Any,
+                 accidents$Mes.de.any,
+                 accidents$Dia.de.mes,
+                 sep = '-'))
+
 # Numeric coordiantes
 accidents$y <- as.numeric(gsub(',', '.', accidents$Coordenada.UTM..Y.))
 accidents$x <- as.numeric(gsub(',', '.', accidents$Coordenada.UTM..X. ))
@@ -47,25 +54,56 @@ accidents <- accidents[accidents$x != -1 & accidents$y != -1,]
 ##### Geographic data
 mapa <- readOGR(paste0(root, '/data/geo/barris'), 'BCN_Barri_SHP')
 
-# GET WORST INTERSECTION
+##### Convert both accidents and mapa to lat/lng
+
+# Accidents
+coordinates(accidents) <- ~x+y
+proj4string(accidents) <- CRS(proj4string(mapa))
+accidents <- spTransform(accidents, CRS("+proj=longlat +datum=WGS84"))
+accidents$x
+
+# Mapa
+mapa <- spTransform(mapa, CRS("+proj=longlat +datum=WGS84"))
+
+# ##### GIF OF ACCIDENTS OVER TIME
+# dates <- unique(sort(accidents$date))
+# dates <- dates[dates >= '2014-01-01']
+# for (i in 1:length(dates)){
+#   year <- format(dates[i], '%Y')
+#   file_name <- paste0('temp/', year, '/', as.character(dates[i]), '.png')
+#   sub_data <- accidents[accidents$date == dates[i],]
+#   for (r in 1:5){
+#     if(r == 1){ results_list <- list()}
+#     residuals <- data.frame(accidents[accidents$date < dates[i] &
+#                              accidents$date >= (dates[i] - r),])
+#     residuals$color <- adjustcolor('darkred', alpha.f = (6-r) * 0.2)
+#     residuals$size <- (6-r) * 0.2
+#     results_list[[r]] <- residuals
+#   }
+#   residuals <- do.call('rbind', results_list)
+#   
+#   png(file_name)
+#   plot(mapa, col = 'darkgrey', border = 'white')
+#   points(residuals$x, residuals$y, pch = 16, col = residuals$color,
+#          cex = residuals$size)
+#   points(sub_data, pch = 16, 
+#          col = adjustcolor('darkred', alpha.f = 0.99),
+#          cex = 1)
+#   title(main = format(dates[i], '%B %d, %Y'))
+#   dev.off()
+#   print(i)
+# }
+
+##### GET WORST INTERSECTION
 temp <- accidents %>%
+  data.frame %>%
   group_by(x,y) %>%
   tally 
 temp <- temp[rev(order(temp$n)),]
 worst <- temp[1,]
 
 plot(mapa)
-points(worst$x, worst$y, pch = 16, col = 'red')
-
-# Convert to lat/lng
-temp_ll <- data.frame(temp)
-coordinates(temp_ll) <- ~x+y
-proj4string(temp_ll)  <- CRS(proj4string(mapa))
-
-temp_ll <- spTransform(temp_ll, CRS("+proj=longlat +datum=WGS84"))
-mapa_ll <- spTransform(mapa, CRS("+proj=longlat +datum=WGS84"))
-worst <- temp_ll[1,]
-points(worst)
+points(worst, pch = 16, col = 'red')
 
 #####
 # LOCATION
@@ -184,3 +222,13 @@ ggplot(data = dow, aes(x = Descripció.dia.setmana, y = n)) +
   xlab('Day of the week') +
   ylab('Accidents') +
 ggsave('/home/joebrew/Documents/bcndata.github.io/img/2015-11-30-Car-accidents-in-Barcelona/dia.JPG')
+
+
+#####
+# MONTH OF YEAR
+#####
+
+
+##### 
+# BARCA GAMES
+#####
