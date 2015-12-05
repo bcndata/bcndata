@@ -24,6 +24,7 @@ source(paste0(root, '/lib/helpers.R'))
 csvs <- dir(data_dir)
 csvs <- csvs[grepl('.csv', csvs)]
 csvs <- paste0(data_dir, '/', csvs)
+csvs <- csvs[grepl('ACCIDENTS', csvs)]
 results_list <- list()
 hh <- c()
 for (i in 1:length(csvs)){
@@ -77,7 +78,7 @@ accidents <- spTransform(accidents, CRS("+proj=longlat +datum=WGS84"))
 mapa <- spTransform(mapa, CRS("+proj=longlat +datum=WGS84"))
 
 ##### WEATHER
-if(!'weather.csv' %in% data_dir){
+if(!'weather.csv' %in% dir(data_dir)){
   years <- 2010:2014
   results_list <- list()
   for (y in 1:length(years)){
