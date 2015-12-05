@@ -9,11 +9,16 @@ library(dplyr)
 library(ggplot2)
 library(ggthemes)
 library(rgdal)
+library(rgeos)
+library(RColorBrewer)
+library(ggmap)
+library(weatherData)
 # require(RCurl)
 # options(RCurlOptions = list(cainfo = system.file("CurlSSL", "cacert.pem", package = "RCurl")))
 
 ##### Theme
 source(paste0(root, '/lib/theme.R'))
+source(paste0(root, '/lib/helpers.R'))
 
 ##### Data read in
 csvs <- dir(data_dir)
@@ -51,6 +56,13 @@ accidents$x <- as.numeric(gsub(',', '.', accidents$Coordenada.UTM..X. ))
 # Remove those non-geocoded accidents
 accidents <- accidents[accidents$x != -1 & accidents$y != -1,]
 
+# Get year, month, etc
+accidents$year <- as.numeric(format(accidents$date, '%Y'))
+accidents$year_month <- paste0(format(accidents$date, '%Y'),
+                                      '-',
+                                      format(accidents$date, '%m'))
+accidents$month <- as.numeric(format(accidents$date, '%m'))
+
 ##### Geographic data
 mapa <- readOGR(paste0(root, '/data/geo/barris'), 'BCN_Barri_SHP')
 
@@ -60,50 +72,184 @@ mapa <- readOGR(paste0(root, '/data/geo/barris'), 'BCN_Barri_SHP')
 coordinates(accidents) <- ~x+y
 proj4string(accidents) <- CRS(proj4string(mapa))
 accidents <- spTransform(accidents, CRS("+proj=longlat +datum=WGS84"))
-accidents$x
 
 # Mapa
 mapa <- spTransform(mapa, CRS("+proj=longlat +datum=WGS84"))
 
-# ##### GIF OF ACCIDENTS OVER TIME
-# dates <- unique(sort(accidents$date))
-# dates <- dates[dates >= '2014-01-01']
-# for (i in 1:length(dates)){
-#   year <- format(dates[i], '%Y')
-#   file_name <- paste0('temp/', year, '/', as.character(dates[i]), '.png')
-#   sub_data <- accidents[accidents$date == dates[i],]
-#   for (r in 1:5){
-#     if(r == 1){ results_list <- list()}
-#     residuals <- data.frame(accidents[accidents$date < dates[i] &
-#                              accidents$date >= (dates[i] - r),])
-#     residuals$color <- adjustcolor('darkred', alpha.f = (6-r) * 0.2)
-#     residuals$size <- (6-r) * 0.2
-#     results_list[[r]] <- residuals
-#   }
-#   residuals <- do.call('rbind', results_list)
-#   
-#   png(file_name)
-#   plot(mapa, col = 'darkgrey', border = 'white')
-#   points(residuals$x, residuals$y, pch = 16, col = residuals$color,
-#          cex = residuals$size)
-#   points(sub_data, pch = 16, 
-#          col = adjustcolor('darkred', alpha.f = 0.99),
-#          cex = 1)
-#   title(main = format(dates[i], '%B %d, %Y'))
-#   dev.off()
-#   print(i)
-# }
+##### WEATHER
+if(!'weather.csv' %in% data_dir){
+  years <- 2010:2014
+  results_list <- list()
+  for (y in 1:length(years)){
+    weath <- getWeatherForDate(station_id = 'BCN',
+                               start_date = paste0(years[y], '-01-01'),
+                               end_date = paste0(years[y], '-12-31'),
+                               opt_all_columns = TRUE)
+    results_list[[y]] <- weath
+    }
+  weather <- do.call('rbind', results_list)
+  write_csv(weather, paste0(data_dir, '/weather.csv'))
+} else {
+  weather <- read_csv(paste0(data_dir, '/weather.csv'))
+}
+
+# Join weather to accidents
+temp <- accidents %>%
+  data.frame %>%
+  group_by(date) %>%
+  summarise(accidents = n()) %>%
+  left_join(weather %>%
+              mutate(date = as.Date(Date))) %>%
+  mutate(max_temp_bin = round(Max_TemperatureF, digits = -1),
+         rainy = PrecipitationIn > 0)
+
+# Temperature
+ggplot(data = temp,
+       aes(x= factor(max_temp_bin),
+           y = accidents)) +
+  geom_jitter(alpha = 0.2) +
+  geom_violin(fill = 'darkgreen', alpha = 0.2) +
+  ylab('Accidents') +
+  xlab('Maximum temperature (F)') +
+  ggtitle('Daily car accidents in Barcelona by temperature')
+ggsave('/home/joebrew/Documents/bcndata.github.io/img/2015-11-30-Car-accidents-in-Barcelona/weather.JPG')
+
+temp$rainy <- ifelse(temp$rainy,
+                     'Some rain', 
+                     'No rain')
+ggplot(data = temp,
+       aes(x = rainy,
+           y = accidents)) +
+  geom_jitter(alpha = 0.2) +
+  geom_violin(fill = 'darkgreen', alpha = 0.2) +
+  ylab('Accidents') +
+  xlab('Raininess') +
+  ggtitle('Daily car accidents in Barcelona by raininess')
+ggsave('/home/joebrew/Documents/bcndata.github.io/img/2015-11-30-Car-accidents-in-Barcelona/rainy.JPG')
+
+
+# GIF
+# source(paste0(root_dir, '/code/accidents_de_cotxe/make_gif.R'))
+
+##### GRID APPROACH TO GETTING WORST INTERSECTION
+temp <- expand.grid(
+  x = seq(min(accidents$x), max(accidents$x), length = 100),
+  y = seq(min(accidents$y), max(accidents$y), length = 100)
+)
+
+# Placeholders for accidents within 10, 100, 1000 meters
+temp$within_0010 <- temp$within_0100 <- temp$within_1000 <- NA
+
+coordinates(temp) <- ~x+y
+proj4string(temp) <- proj4string(mapa)
+
+# Loop through each grid
+for (i in 1:nrow(temp)){
+  this_point <- temp[i,]
+  distance <- get_distance(lon1 = this_point$x,
+                           lat1 = this_point$y, 
+                           lon2 = accidents$x,
+                           lat2 = accidents$y)
+  temp$within_0010[i] <- length(which(distance <= 0.01))
+  temp$within_0100[i] <- length(which(distance <= 0.1))
+  temp$within_1000[i] <- length(which(distance <= 1))
+  cat(paste0('Finished ', i, ' of ', nrow(temp), '\n'))
+}
+
+# Organize by within_0010
+temp <- temp[order(temp$within_0010),]
+
+# Visualize
+cols <- rev(colorRampPalette(brewer.pal(9, 'Spectral'))(max(temp$within_0010)))
+plot(mapa)
+points(temp, col = adjustcolor(cols[temp$within_0010], alpha.f = 0.2), 
+       pch = 16, cex = 0.6)
 
 ##### GET WORST INTERSECTION
 temp <- accidents %>%
   data.frame %>%
+  # round
+  mutate(x = round(x, digits = 3),
+         y = round(y, digits = 3)) %>%
   group_by(x,y) %>%
-  tally 
+  summarise(n = n(),
+            deaths = sum(Número.de.morts),
+            victims = sum(Número.de.víctimes),
+            vehicles = sum(Número.de.vehicles.implicats)) 
 temp <- temp[rev(order(temp$n)),]
 worst <- temp[1,]
+paste0(worst$y, ', ', worst$x)
 
-plot(mapa)
-points(worst, pch = 16, col = 'red')
+# See worst intersection
+x = get_map(location = c(lon = worst$x - 0.0004, lat = worst$y + 0.0005),
+            zoom = 18,
+            maptype = 'toner',
+            source = 'stamen',
+            color = 'bw')
+ggmap(x)
+
+# Expand temp to get all points in Barcelona
+temp_ex <- expand.grid(x = seq(min(temp$x) - 0.05,
+                               max(temp$x) + 0.05,
+                               by = 0.001),
+                       y = seq(min(temp$y) - 0.05,
+                               max(temp$y) + 0.05,
+                               by = 0.001))
+
+# Join temp_ex to temp
+temp_ex <- left_join(temp_ex, temp)
+temp_ex$n[is.na(temp_ex$n)] <- 0
+
+# Define color
+# cols <- rev(colorRampPalette(brewer.pal(9, 'Spectral'))(max(temp$n)))
+cols <- colorRampPalette(brewer.pal(9, 'Oranges'))(max(temp$n))
+temp_ex$color <- ifelse(temp_ex$n == 0,
+                        'blue',
+                        cols[temp_ex$n])
+
+# Make spatial
+coordinates(temp_ex) <- ~x+y
+proj4string(temp_ex) <- proj4string(mapa)
+
+# Keep only those within the Barcelona polygons
+temp_ex <- temp_ex[!is.na(over(temp_ex, polygons(mapa))),]
+
+# Visualize
+plot(mapa, border = NA)
+points(temp_ex, col = temp_ex$color, pch = 16, cex = 0.4)
+
+#####
+# NUMBER OF ACCIDENTS BY YEAR / MONTH
+#####
+temp <- accidents %>%
+  data.frame %>%
+  group_by(Date = year) %>%
+  summarise(n = n(),
+            deaths = sum(Número.de.morts),
+            victims = sum(Número.de.víctimes),
+            vehicles = sum(Número.de.vehicles.implicats))
+
+ggplot(data = temp, aes(x = Date, y = n)) +
+  geom_bar(stat = 'identity', alpha = 0.5, fill = 'darkgreen') +
+  # geom_point() +
+  # theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  xlab('') +
+  ylab('Accidents') +
+  ggtitle('Accidents per year')
+    # geom_bar(stat = 'identity', data = temp, aes(x = Date, y = deaths))
+ggsave('/home/joebrew/Documents/bcndata.github.io/img/2015-11-30-Car-accidents-in-Barcelona/by_year.JPG')
+
+
+#####
+# DEATHS ONLY
+#####
+temp <- accidents %>%
+  data.frame %>%
+  filter(Número.de.morts > 0) %>%
+  group_by(Hora.de.dia) %>% tally
+
+plot(mapa)  
+points(temp$x, temp$y, col = 'red')
 
 #####
 # LOCATION
