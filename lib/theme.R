@@ -3,8 +3,8 @@ library(ggplot2)
 # Set the default theme
 theme_set(theme_bw())
 # Modify it with theme()
-tt <- theme(axis.text = element_text(size=18, colour=NULL),
-            axis.title = element_text(size = 24, colour= NULL),
+tt <- theme(axis.text = element_text(size=16, colour=NULL),
+            axis.title = element_text(size = 20, colour= NULL),
             plot.title = element_text(size = 30),
             # axis.line = element_line(size = 1, colour = "black"),
             axis.text = element_text(colour = "blue"),
