@@ -49,7 +49,9 @@ simpasym <- function(n, p, z=1.96, cc=TRUE){
     out$ub <- p + z*sqrt((p*(1-p))/n)
   }
   out
-}##### CONFIDENCE INTERVALS ON PROPORTIONS
+}
+
+##### CONFIDENCE INTERVALS ON PROPORTIONS
 # (https://aghaynes.wordpress.com/2014/04/09/calculating-confidence-intervals-for-proportions/)
 simpasym <- function(n, p, z=1.96, cc=TRUE){
   out <- list()
@@ -61,4 +63,23 @@ simpasym <- function(n, p, z=1.96, cc=TRUE){
     out$ub <- p + z*sqrt((p*(1-p))/n)
   }
   out
+}
+
+##### FARENHEIT TO CELSIUS
+# http://swcarpentry.github.io/r-novice-inflammation/08-making-packages-R.html
+f2c <- function(temp) {
+  #Converts Fahrenheit to Celsius using fahr_to_kelvin() and kelvin_to_celsius()
+  fahr_to_kelvin <- function(temp) {
+    #Converts Fahrenheit to Kelvin
+    kelvin <- ((temp - 32) * (5/9)) + 273.15
+    kelvin
+  }
+  kelvin_to_celsius <- function(temp) {
+    #Converts Kelvin to Celsius
+    Celsius <- temp - 273.15
+    Celsius
+  }
+  temp_k <- fahr_to_kelvin(temp)
+  result <- kelvin_to_celsius(temp_k)
+  result
 }
