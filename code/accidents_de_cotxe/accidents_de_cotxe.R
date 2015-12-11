@@ -83,6 +83,18 @@ accidents <- spTransform(accidents, CRS("+proj=longlat +datum=WGS84"))
 # Mapa
 mapa <- spTransform(mapa, CRS("+proj=longlat +datum=WGS84"))
 
+# Simple map of all accidents
+par(mar = c(0,0,0,0))
+par(oma = c(0,0,0,0))
+jpeg(filename = '/home/joebrew/Documents/bcndata.github.io/img/2015-11-30-Car-accidents-in-Barcelona/static.jpeg',
+     width = 4000, height = 4000, units = 'px', quality = 100, bg = 'black')
+plot(mapa, border = 'black', bg = 'black')
+points(accidents$x, accidents$y, col = 'white', pch = 16, cex = 0.55)
+deaths <- accidents[accidents$Número.de.morts > 0,]
+points(deaths$x, deaths$y, col = 'red', pch = 16, cex = 0.55)
+dev.off()
+
+
 ##### FOOTBALL GAMES
 
 # READ 2012/13 FOOTBALL DATA (compiled from wikipedia)
@@ -189,43 +201,80 @@ deaths <-
   mutate(outcome = ifelse(is.na(outcome), 'No game', outcome)) %>%
   mutate(outcome = capitalize(outcome))
 
-ggplot(data = deaths, aes(x = outcome, y = daily_rate)) +
-  geom_bar(stat = 'identity', fill = 'darkgreen', alpha = 0.6) +
-  xlab('Outcome of game') +
-  ylab('Daily car accident deaths') +
-  bcn_data_theme
-ggsave('/home/joebrew/Documents/bcndata.github.io/img/2015-11-30-Car-accidents-in-Barcelona/deaths.JPG')
+# ggplot(data = deaths, aes(x = outcome, y = daily_rate)) +
+#   geom_bar(stat = 'identity', fill = 'darkgreen', alpha = 0.6) +
+#   xlab('Outcome of game') +
+#   ylab('Daily car accident deaths') +
+#   bcn_data_theme
+# ggsave('/home/joebrew/Documents/bcndata.github.io/img/2015-11-30-Car-accidents-in-Barcelona/deaths.JPG')
 
 
-ggplot(data = wl_agg, aes(x = outcome, y = daily_rate)) +
+# English
+ggplot(data = wl_agg, aes(x = Outcome, y = `Daily rate`)) +
   geom_bar(stat = 'identity', fill = 'darkgreen', alpha = 0.6) +
   xlab('Outcome of game') +
   ylab('Daily accidents') +
   bcn_data_theme
 ggsave('/home/joebrew/Documents/bcndata.github.io/img/2015-11-30-Car-accidents-in-Barcelona/football.JPG')
 
-wl <- temp %>%
-  group_by(date, outcome) %>%
-  summarise(accidents = n()) %>%
-  mutate(outcome = ifelse(is.na(outcome), 'No game', outcome)) 
-ggplot(data = wl,
-       aes(x = factor(outcome), y = accidents)) +
-  geom_jitter(alpha = 0.7) +
-  geom_violin(alpha = 0.5, fill = 'darkgreen') +
-  xlab('Outcome of game') +
-  ylab('Number of car accidents')
 
-# All time map football game
-ggplot(data = temp_model,
-       aes(x = date, y = accidents, color = outcome)) +
-  geom_point(size = 4) +
-  geom_line(aes(color = NULL), alpha = 0.1)
+# Catala
+wl_agg_ca <- wl_agg
+outcome_levels <- c('Perdre', 'No partit', 'Empat', 'Guanyar')
+wl_agg_ca$Outcome <- 
+  outcome_levels
+wl_agg_ca$Outcome <- factor(
+  wl_agg_ca$Outcome,
+  levels = outcome_levels 
+)
+ggplot(data = wl_agg_ca, aes(x = Outcome, y = `Daily rate`)) +
+  geom_bar(stat = 'identity', fill = 'darkgreen', alpha = 0.6) +
+  xlab('Resultat') +
+  ylab('Accidents per dia') +
+  bcn_data_theme
+ggsave('/home/joebrew/Documents/bcndata.github.io/img/2015-11-30-Car-accidents-in-Barcelona/football_ca.JPG')
+
+
+
+# Espanol
+wl_agg_ca <- wl_agg
+outcome_levels <- c('Peder', 'No partido', 'Empate', 'Ganar')
+wl_agg_ca$Outcome <- 
+  outcome_levels
+wl_agg_ca$Outcome <- factor(
+  wl_agg_ca$Outcome,
+  levels = outcome_levels 
+)
+ggplot(data = wl_agg_ca, aes(x = Outcome, y = `Daily rate`)) +
+  geom_bar(stat = 'identity', fill = 'darkgreen', alpha = 0.6) +
+  xlab('Resultado') +
+  ylab('Accidentes por dia') +
+  bcn_data_theme
+ggsave('/home/joebrew/Documents/bcndata.github.io/img/2015-11-30-Car-accidents-in-Barcelona/football_es.JPG')
+
+
+# wl <- temp %>%
+#   group_by(date, outcome) %>%
+#   summarise(accidents = n()) %>%
+#   mutate(outcome = ifelse(is.na(outcome), 'No game', outcome)) 
+# ggplot(data = wl,
+#        aes(x = factor(outcome), y = accidents)) +
+#   geom_jitter(alpha = 0.7) +
+#   geom_violin(alpha = 0.5, fill = 'darkgreen') +
+#   xlab('Outcome of game') +
+#   ylab('Number of car accidents')
+
+# # All time map football game
+# ggplot(data = temp_model,
+#        aes(x = date, y = accidents, color = outcome)) +
+#   geom_point(size = 4) +
+#   geom_line(aes(color = NULL), alpha = 0.1)
 
 # Games by day of week
-temp %>%
-  filter(game_day == TRUE) %>%
-  group_by(Dia.de.setmana) %>%
-  summarise(n = n())
+# temp %>%
+#   filter(game_day == TRUE) %>%
+#   group_by(Dia.de.setmana) %>%
+#   summarise(n = n())
 
 ##### WEATHER
 if(!'weather.csv' %in% dir(data_dir)){
@@ -255,28 +304,28 @@ temp <- accidents %>%
          rainy = PrecipitationIn > 0)
 
 # Temperature
-ggplot(data = temp,
-       aes(x= factor(max_temp_bin),
-           y = accidents)) +
-  geom_jitter(alpha = 0.2) +
-  geom_violin(fill = 'darkgreen', alpha = 0.2) +
-  ylab('Accidents') +
-  xlab('Maximum temperature (F)') +
-  ggtitle('Daily car accidents in Barcelona by temperature')
-ggsave('/home/joebrew/Documents/bcndata.github.io/img/2015-11-30-Car-accidents-in-Barcelona/weather.JPG')
+# ggplot(data = temp,
+#        aes(x= factor(max_temp_bin),
+#            y = accidents)) +
+#   geom_jitter(alpha = 0.2) +
+#   geom_violin(fill = 'darkgreen', alpha = 0.2) +
+#   ylab('Accidents') +
+#   xlab('Maximum temperature (F)') +
+#   ggtitle('Daily car accidents in Barcelona by temperature')
+# ggsave('/home/joebrew/Documents/bcndata.github.io/img/2015-11-30-Car-accidents-in-Barcelona/weather.JPG')
 
-temp$rainy <- ifelse(temp$rainy,
-                     'Some rain', 
-                     'No rain')
-ggplot(data = temp,
-       aes(x = rainy,
-           y = accidents)) +
-  geom_jitter(alpha = 0.2) +
-  geom_violin(fill = 'darkgreen', alpha = 0.2) +
-  ylab('Accidents') +
-  xlab('Raininess') +
-  ggtitle('Daily car accidents in Barcelona by raininess')
-ggsave('/home/joebrew/Documents/bcndata.github.io/img/2015-11-30-Car-accidents-in-Barcelona/rainy.JPG')
+# temp$rainy <- ifelse(temp$rainy,
+#                      'Some rain', 
+#                      'No rain')
+# ggplot(data = temp,
+#        aes(x = rainy,
+#            y = accidents)) +
+#   geom_jitter(alpha = 0.2) +
+#   geom_violin(fill = 'darkgreen', alpha = 0.2) +
+#   ylab('Accidents') +
+#   xlab('Raininess') +
+#   ggtitle('Daily car accidents in Barcelona by raininess')
+# ggsave('/home/joebrew/Documents/bcndata.github.io/img/2015-11-30-Car-accidents-in-Barcelona/rainy.JPG')
 
 
 # GIF
@@ -380,6 +429,7 @@ temp <- accidents %>%
             victims = sum(Número.de.víctimes),
             vehicles = sum(Número.de.vehicles.implicats))
 
+# ENGLISH / Catalan
 ggplot(data = temp, aes(x = Date, y = n)) +
   geom_bar(stat = 'identity', alpha = 0.5, fill = 'darkgreen') +
   # geom_point() +
@@ -390,6 +440,20 @@ ggplot(data = temp, aes(x = Date, y = n)) +
   bcn_data_theme
     # geom_bar(stat = 'identity', data = temp, aes(x = Date, y = deaths))
 ggsave('/home/joebrew/Documents/bcndata.github.io/img/2015-11-30-Car-accidents-in-Barcelona/by_year.JPG')
+ggsave('/home/joebrew/Documents/bcndata.github.io/img/2015-11-30-Car-accidents-in-Barcelona/by_year_ca.JPG')
+
+# SPANISH
+ggplot(data = temp, aes(x = Date, y = n)) +
+  geom_bar(stat = 'identity', alpha = 0.5, fill = 'darkgreen') +
+  # geom_point() +
+  # theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  xlab('') +
+  ylab('Accidentes') +
+  # ggtitle('Accidents per year') +
+  bcn_data_theme
+# geom_bar(stat = 'identity', data = temp, aes(x = Date, y = deaths))
+ggsave('/home/joebrew/Documents/bcndata.github.io/img/2015-11-30-Car-accidents-in-Barcelona/by_year_es.JPG')
+
 
 #####
 # TIME OF DAY
@@ -442,35 +506,109 @@ tod_agg <- tod %>%
             p090 = quantile(n, probs = 0.9),
             pmean = mean(n))
 
-ggplot(data = tod_agg,
-       aes(x = Hora.de.dia, y = p050)) +
-  geom_line() +
-  geom_ribbon(aes(x = Hora.de.dia, ymin = p040, ymax = p060), alpha = 0.2) + 
-  geom_ribbon(aes(x = Hora.de.dia, ymin = p030, ymax = p070), alpha = 0.2) + 
-  geom_ribbon(aes(x = Hora.de.dia, ymin = p020, ymax = p080), alpha = 0.2) + 
-  geom_ribbon(aes(x = Hora.de.dia, ymin = p010, ymax = p090), alpha = 0.2) 
+# ggplot(data = tod_agg,
+#        aes(x = Hora.de.dia, y = p050)) +
+#   geom_line() +
+#   geom_ribbon(aes(x = Hora.de.dia, ymin = p040, ymax = p060), alpha = 0.2) + 
+#   geom_ribbon(aes(x = Hora.de.dia, ymin = p030, ymax = p070), alpha = 0.2) + 
+#   geom_ribbon(aes(x = Hora.de.dia, ymin = p020, ymax = p080), alpha = 0.2) + 
+#   geom_ribbon(aes(x = Hora.de.dia, ymin = p010, ymax = p090), alpha = 0.2) 
   
+
+tod_agg$Hora.de.dia <- paste0(tod_agg$Hora.de.dia, ':00')
+tod_agg$Hora.de.dia <- factor(tod_agg$Hora.de.dia, 
+                              levels = tod_agg$Hora.de.dia)
+
+# ENGLISH
+
 ggplot(data = tod_agg,
-       aes(x = Hora.de.dia, y = pmean)) +
+       aes(x = as.numeric(Hora.de.dia), y = pmean)) +
   geom_area(fill = 'darkgreen', alpha = 0.6) +
-  xlab('Hour of day') +
+  xlab('Time of day') +
   ylab('Daily accidents') +
-  bcn_data_theme
+  bcn_data_theme +
+  scale_x_discrete(labels = tod_agg$Hora.de.dia) +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
 ggsave('/home/joebrew/Documents/bcndata.github.io/img/2015-11-30-Car-accidents-in-Barcelona/hora.JPG')
+
+
+# CATALAN
+ggplot(data = tod_agg,
+       aes(x = as.numeric(Hora.de.dia), y = pmean)) +
+  geom_area(fill = 'darkgreen', alpha = 0.6) +
+  xlab('Hora del dia') +
+  ylab('Accidents per dia') +
+  bcn_data_theme +
+  scale_x_discrete(labels = tod_agg$Hora.de.dia) +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+ggsave('/home/joebrew/Documents/bcndata.github.io/img/2015-11-30-Car-accidents-in-Barcelona/hora_ca.JPG')
+
+# ESPANOL
+ggplot(data = tod_agg,
+       aes(x = as.numeric(Hora.de.dia), y = pmean)) +
+  geom_area(fill = 'darkgreen', alpha = 0.6) +
+  xlab('Hora del dia') +
+  ylab('Accidentes por dia') +
+  bcn_data_theme +
+  scale_x_discrete(labels = tod_agg$Hora.de.dia) +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+ggsave('/home/joebrew/Documents/bcndata.github.io/img/2015-11-30-Car-accidents-in-Barcelona/hora_es.JPG')
+
 
 #####
 # DAY OF WEEK
 #####
+
+dow_dict <- data.frame(ca = c('Dilluns', 'Dimarts', 'Dimecres', 'Dijous',
+                              'Divendres', 'Dissabte', 'Diumenge'),
+                       en = c('Monday', 'Tuesday', 'Wednesday', 'Thursday',
+                              'Friday', 'Saturday', 'Sunday'),
+                       es = c('Lunes', 'Martes', 'Miércoles', 'Jueves',
+                              'Viernes', 'Sábado', 'Domingo'))
 
 dow <- 
   accidents %>% 
   data.frame %>%
   group_by(Descripció.dia.setmana) %>%
   summarise(n = n())
+
+# CATALAN
 dow$Descripció.dia.setmana <- 
   factor(as.character(dow$Descripció.dia.setmana),
-         levels = c('Dilluns', 'Dimarts', 'Dimecres', 'Dijous',
-                    'Divendres', 'Dissabte', 'Diumenge'))
+         levels = dow_dict$ca,
+         labels = dow_dict$ca)
+
+ggplot(data = dow, aes(x = Descripció.dia.setmana, y = n / (365.25 * 4))) +
+  geom_bar(stat = 'identity', fill = 'darkgreen', alpha = 0.6) +
+  bcn_data_theme +
+  # ggtitle('Stay off the road on Friday') +
+  xlab('Dia de la setmana') +
+  ylab('Accidents per dia') +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 20))
+ggsave('/home/joebrew/Documents/bcndata.github.io/img/2015-11-30-Car-accidents-in-Barcelona/dia_ca.JPG')
+
+# ESPANOL
+dow$Descripció.dia.setmana <- 
+  factor(as.character(dow$Descripció.dia.setmana),
+         levels = dow_dict$ca,
+         labels = dow_dict$es)
+
+ggplot(data = dow, aes(x = Descripció.dia.setmana, y = n / (365.25 * 4))) +
+  geom_bar(stat = 'identity', fill = 'darkgreen', alpha = 0.6) +
+  bcn_data_theme +
+  # ggtitle('Stay off the road on Friday') +
+  xlab('Dia de la semana') +
+  ylab('Accidentes por dia') +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 20))
+ggsave('/home/joebrew/Documents/bcndata.github.io/img/2015-11-30-Car-accidents-in-Barcelona/dia_es.JPG')
+
+
+# ENGLISH
+dow$Descripció.dia.setmana <- 
+  factor(as.character(dow$Descripció.dia.setmana),
+         levels = dow_dict$es,
+         labels = dow_dict$en)
+
 ggplot(data = dow, aes(x = Descripció.dia.setmana, y = n / (365.25 * 4))) +
   geom_bar(stat = 'identity', fill = 'darkgreen', alpha = 0.6) +
   bcn_data_theme +
@@ -480,9 +618,12 @@ ggplot(data = dow, aes(x = Descripció.dia.setmana, y = n / (365.25 * 4))) +
   theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 20))
 ggsave('/home/joebrew/Documents/bcndata.github.io/img/2015-11-30-Car-accidents-in-Barcelona/dia.JPG')
 
+
 #####
 # DAY AND HOUR COMBINED
 #####
+
+# ENGLISH
 temp <- accidents %>%
   data.frame %>%
   group_by(Dia.de.setmana, Hora.de.dia) %>%
@@ -553,6 +694,165 @@ ggplot() +
 # theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
 ggsave('/home/joebrew/Documents/bcndata.github.io/img/2015-11-30-Car-accidents-in-Barcelona/full_week.JPG')
 
+
+
+# CATALAN
+temp <- accidents %>%
+  data.frame %>%
+  group_by(Dia.de.setmana, Hora.de.dia) %>%
+  summarise(n = n())
+# New var
+temp$day_hour <- 
+  paste0(temp$Dia.de.setmana,'-', temp$Hora.de.dia)
+
+# Make a label vector
+temp$label <- ifelse(temp$Hora.de.dia == 0,
+                     temp$Dia.de.setmana,
+                     NA)
+label_dict <- data.frame(number = 1:7,
+                         day = c('Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'))
+temp$label <- label_dict$day[temp$label]
+temp$label <- as.character(temp$label)
+temp$label[is.na(temp$label)] <- ''
+
+# Rename in catalan
+temp$label <- 
+  factor(temp$label,
+         levels = unique(temp$label[nchar(temp$label) > 0]),
+         labels = dow_dict$ca)
+temp$label <- as.character(temp$label)
+temp$label[is.na(temp$label)] <- ''
+
+# Define rectangles
+rect_left <- which(nchar(temp$label) > 2) - 0.5
+rect_right <- c((rect_left)[-1], nrow(temp) + 0.5)
+low <- min(temp$n, na.rm = TRUE)
+high <- max(temp$n, na.rm = TRUE)
+rectangles <- data.frame(xmin = rect_left,
+                         xmax = rect_right,
+                         ymin = 0,
+                         ymax = high * 1)
+v_rectangles <- data.frame(xmin = 0,
+                           xmax = nrow(temp) + 0.5,
+                           ymin = 0,
+                           ymax = c(0,high * 1))
+
+# Filler colors for rectangles
+filler <- rep(c('grey90', 'grey50'), ceiling(0.5 * nrow(rectangles)))
+if(length(filler) != nrow(rectangles)){
+  filler <- filler[1:(length(filler) - 1)]
+}
+
+# Replace labels
+for (i in which(nchar(temp$label) > 0)){
+  label <- temp$label[i]
+  # remove old
+  temp$label[i] <- ''
+  # Give new
+  temp$label[(i+12)] <- label
+}
+
+ggplot() +
+  theme(axis.text.x = element_text(size = 15, angle = 45, 
+                                   # family='Ubuntu Mono',
+                                   hjust = 1),
+        axis.text.y=element_text(hjust=1, angle=0),
+        legend.position = 'none') +
+  theme(axis.title.x = element_blank()) +
+  scale_x_discrete(labels = temp$label) +
+  theme(axis.ticks = element_blank()) +
+  geom_rect(data = rectangles, aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax), 
+            fill = filler, alpha = 0.3) +
+  geom_area(data = temp, aes(x = factor(day_hour),
+                             y = n,
+                             group = 1),
+            fill = 'darkgreen', alpha = 0.6) +
+  bcn_data_theme +
+  xlab('Dia de la setmana') +
+  ylab('Accidents') +
+  theme(panel.grid.minor=element_blank(),
+        panel.grid.major=element_blank()) 
+# theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+ggsave('/home/joebrew/Documents/bcndata.github.io/img/2015-11-30-Car-accidents-in-Barcelona/full_week_ca.JPG')
+
+# ESPANOL
+temp <- accidents %>%
+  data.frame %>%
+  group_by(Dia.de.setmana, Hora.de.dia) %>%
+  summarise(n = n())
+# New var
+temp$day_hour <- 
+  paste0(temp$Dia.de.setmana,'-', temp$Hora.de.dia)
+
+# Make a label vector
+temp$label <- ifelse(temp$Hora.de.dia == 0,
+                     temp$Dia.de.setmana,
+                     NA)
+label_dict <- data.frame(number = 1:7,
+                         day = c('Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'))
+temp$label <- label_dict$day[temp$label]
+temp$label <- as.character(temp$label)
+temp$label[is.na(temp$label)] <- ''
+
+# Rename in espanol
+temp$label <- 
+  factor(temp$label,
+         levels = unique(temp$label[nchar(temp$label) > 0]),
+         labels = dow_dict$es)
+temp$label <- as.character(temp$label)
+temp$label[is.na(temp$label)] <- ''
+
+# Define rectangles
+rect_left <- which(nchar(temp$label) > 2) - 0.5
+rect_right <- c((rect_left)[-1], nrow(temp) + 0.5)
+low <- min(temp$n, na.rm = TRUE)
+high <- max(temp$n, na.rm = TRUE)
+rectangles <- data.frame(xmin = rect_left,
+                         xmax = rect_right,
+                         ymin = 0,
+                         ymax = high * 1)
+v_rectangles <- data.frame(xmin = 0,
+                           xmax = nrow(temp) + 0.5,
+                           ymin = 0,
+                           ymax = c(0,high * 1))
+
+# Filler colors for rectangles
+filler <- rep(c('grey90', 'grey50'), ceiling(0.5 * nrow(rectangles)))
+if(length(filler) != nrow(rectangles)){
+  filler <- filler[1:(length(filler) - 1)]
+}
+
+# Replace labels
+for (i in which(nchar(temp$label) > 0)){
+  label <- temp$label[i]
+  # remove old
+  temp$label[i] <- ''
+  # Give new
+  temp$label[(i+12)] <- label
+}
+
+ggplot() +
+  theme(axis.text.x = element_text(size = 15, angle = 45, 
+                                   # family='Ubuntu Mono',
+                                   hjust = 1),
+        axis.text.y=element_text(hjust=1, angle=0),
+        legend.position = 'none') +
+  theme(axis.title.x = element_blank()) +
+  scale_x_discrete(labels = temp$label) +
+  theme(axis.ticks = element_blank()) +
+  geom_rect(data = rectangles, aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax), 
+            fill = filler, alpha = 0.3) +
+  geom_area(data = temp, aes(x = factor(day_hour),
+                             y = n,
+                             group = 1),
+            fill = 'darkgreen', alpha = 0.6) +
+  bcn_data_theme +
+  xlab('Dia de la semana') +
+  ylab('Accidentes') +
+  theme(panel.grid.minor=element_blank(),
+        panel.grid.major=element_blank()) 
+# theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+ggsave('/home/joebrew/Documents/bcndata.github.io/img/2015-11-30-Car-accidents-in-Barcelona/full_week_es.JPG')
 
 
 
@@ -646,6 +946,8 @@ ggsave('/home/joebrew/Documents/bcndata.github.io/img/2015-11-30-Car-accidents-i
 ##### 
 # LEAFLET MAP WIDGET
 #####
+
+# ENGLISH
 sub_data <- accidents#[accidents@data$Número.de.morts > 0,]
 sub_data_df <- data.frame(sub_data)
 m <- leaflet(mapa) %>%
@@ -655,12 +957,48 @@ m <- leaflet(mapa) %>%
   addMarkers(lng = sub_data_df$x, lat = sub_data_df$y,
              popup = paste0(
                ' \n| DATE: ', format(sub_data$date, '%B %d, %Y'),
-               ' \n| CAUSE: ',sub_data_df$Descripció.causa.vianant,
+               # ' \n| CAUSE: ',sub_data_df$Descripció.causa.vianant,
                ' \n| DEATHS: ', sub_data$Número.de.morts,
                ' \n| SERIOUS INJURIES: ', sub_data$Número.de.lesionats.greus),
              clusterOptions = markerClusterOptions())
 m
-saveWidget(m, '/home/joebrew/Documents/bcndata/data/accidents_de_cotxe/widget.html')
+# saveWidget(m, '/home/joebrew/Documents/bcndata/data/accidents_de_cotxe/widget.html')
 saveWidget(m, '/home/joebrew/Documents/bcndata.github.io/img/2015-11-30-Car-accidents-in-Barcelona/widget.html')
 
-#,
+# CATALA
+sub_data <- accidents#[accidents@data$Número.de.morts > 0,]
+sub_data_df <- data.frame(sub_data)
+m <- leaflet(mapa) %>%
+  # addProviderTiles("Stamen.TonerBackground") %>%
+  addProviderTiles('OpenStreetMap.BlackAndWhite') %>%
+  setView(lng=mean(sub_data_df$x), lat=mean(sub_data_df$y), zoom=13) %>%
+  addMarkers(lng = sub_data_df$x, lat = sub_data_df$y,
+             popup = paste0(
+               ' \n| DATA: ', format(sub_data$date, '%B %d, %Y'),
+               # ' \n| CAUSE: ',sub_data_df$Descripció.causa.vianant,
+               ' \n| MORTS: ', sub_data$Número.de.morts,
+               ' \n| LESIONATS GREUS: ', sub_data$Número.de.lesionats.greus),
+             clusterOptions = markerClusterOptions())
+m
+# saveWidget(m, '/home/joebrew/Documents/bcndata/data/accidents_de_cotxe/widget.html')
+saveWidget(m, '/home/joebrew/Documents/bcndata.github.io/img/2015-11-30-Car-accidents-in-Barcelona/widget_ca.html')
+
+
+# ESPANOL
+sub_data <- accidents#[accidents@data$Número.de.morts > 0,]
+sub_data_df <- data.frame(sub_data)
+m <- leaflet(mapa) %>%
+  # addProviderTiles("Stamen.TonerBackground") %>%
+  addProviderTiles('OpenStreetMap.BlackAndWhite') %>%
+  setView(lng=mean(sub_data_df$x), lat=mean(sub_data_df$y), zoom=13) %>%
+  addMarkers(lng = sub_data_df$x, lat = sub_data_df$y,
+             popup = paste0(
+               ' \n| FECHA: ', format(sub_data$date, '%B %d, %Y'),
+               # ' \n| CAUSE: ',sub_data_df$Descripció.causa.vianant,
+               ' \n| MUERTOS: ', sub_data$Número.de.morts,
+               ' \n| LESIONADOS GRAVES: ', sub_data$Número.de.lesionats.greus),
+             clusterOptions = markerClusterOptions())
+m
+# saveWidget(m, '/home/joebrew/Documents/bcndata/data/accidents_de_cotxe/widget.html')
+saveWidget(m, '/home/joebrew/Documents/bcndata.github.io/img/2015-11-30-Car-accidents-in-Barcelona/widget_es.html')
+
