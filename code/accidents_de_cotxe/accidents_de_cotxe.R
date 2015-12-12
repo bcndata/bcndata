@@ -201,13 +201,39 @@ deaths <-
   mutate(outcome = ifelse(is.na(outcome), 'No game', outcome)) %>%
   mutate(outcome = capitalize(outcome))
 
-# ggplot(data = deaths, aes(x = outcome, y = daily_rate)) +
-#   geom_bar(stat = 'identity', fill = 'darkgreen', alpha = 0.6) +
-#   xlab('Outcome of game') +
-#   ylab('Daily car accident deaths') +
-#   bcn_data_theme
-# ggsave('/home/joebrew/Documents/bcndata.github.io/img/2015-11-30-Car-accidents-in-Barcelona/deaths.JPG')
+# ENGLISH
+ggplot(data = deaths, aes(x = outcome, y = daily_rate)) +
+  geom_bar(stat = 'identity', fill = 'darkgreen', alpha = 0.6) +
+  xlab('Outcome of game') +
+  ylab('Daily car accident deaths') +
+  bcn_data_theme
+ggsave('/home/joebrew/Documents/bcndata.github.io/img/2015-11-30-Car-accidents-in-Barcelona/deaths.JPG')
 
+
+# CATALA
+ct <- deaths
+ct$outcome <- c('Empat', 'No partit', 'Perdre', 'Guanyar')
+ct$outcome <- factor(ct$outcome, levels = ct$outcome)
+ggplot(data = ct, aes(x = outcome, y = daily_rate)) +
+  geom_bar(stat = 'identity', fill = 'darkgreen', alpha = 0.6) +
+  xlab('Resultat') +
+  ylab('Morts per accidents de cotxe per dia') +
+  bcn_data_theme
+ggsave('/home/joebrew/Documents/bcndata.github.io/img/2015-11-30-Car-accidents-in-Barcelona/deaths_ca.JPG')
+
+# ESPANOL
+esp <- deaths
+esp$outcome <- c('Empate', 'No partido', 'Perder', 'Ganar')
+esp$outcome <- faespor(esp$outcome, levels = esp$outcome)
+ggplot(data = esp, aes(x = outcome, y = daily_rate)) +
+  geom_bar(stat = 'identity', fill = 'darkgreen', alpha = 0.6) +
+  xlab('Resultado') +
+  ylab('Muertos por accidentes de coche por dia') +
+  bcn_data_theme
+ggsave('/home/joebrew/Documents/bcndata.github.io/img/2015-11-30-Car-accidents-in-Barcelona/deaths_es.JPG')
+
+
+##### ACCIDENTS IN GENERAL
 
 # English
 ggplot(data = wl_agg, aes(x = Outcome, y = `Daily rate`)) +
