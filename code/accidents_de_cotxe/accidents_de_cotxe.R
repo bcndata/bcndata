@@ -203,7 +203,7 @@ deaths <-
 
 # ENGLISH
 ggplot(data = deaths, aes(x = outcome, y = daily_rate)) +
-  geom_bar(stat = 'identity', fill = 'darkgreen', alpha = 0.6) +
+  geom_bar(stat = 'identity', fill = 'gold', alpha = 0.7) +
   xlab('Outcome of game') +
   ylab('Daily car accident deaths') +
   bcn_data_theme
@@ -212,10 +212,10 @@ ggsave('/home/joebrew/Documents/bcndata.github.io/img/2015-11-30-Car-accidents-i
 
 # CATALA
 ct <- deaths
-ct$outcome <- c('Empat', 'No partit', 'Perdre', 'Guanyar')
+ct$outcome <- c('Empatat', 'Sense partit', 'Perdut', 'Guanyat')
 ct$outcome <- factor(ct$outcome, levels = ct$outcome)
 ggplot(data = ct, aes(x = outcome, y = daily_rate)) +
-  geom_bar(stat = 'identity', fill = 'darkgreen', alpha = 0.6) +
+  geom_bar(stat = 'identity', fill = 'gold', alpha = 0.6) +
   xlab('Resultat') +
   ylab('Morts per accidents de cotxe per dia') +
   bcn_data_theme
@@ -223,10 +223,10 @@ ggsave('/home/joebrew/Documents/bcndata.github.io/img/2015-11-30-Car-accidents-i
 
 # ESPANOL
 esp <- deaths
-esp$outcome <- c('Empate', 'No partido', 'Perder', 'Ganar')
+esp$outcome <- c('Empatado', 'Sin partido', 'Perdido', 'Ganado')
 esp$outcome <- faespor(esp$outcome, levels = esp$outcome)
 ggplot(data = esp, aes(x = outcome, y = daily_rate)) +
-  geom_bar(stat = 'identity', fill = 'darkgreen', alpha = 0.6) +
+  geom_bar(stat = 'identity', fill = 'gold', alpha = 0.6) +
   xlab('Resultado') +
   ylab('Muertos por accidentes de coche por dia') +
   bcn_data_theme
@@ -237,7 +237,7 @@ ggsave('/home/joebrew/Documents/bcndata.github.io/img/2015-11-30-Car-accidents-i
 
 # English
 ggplot(data = wl_agg, aes(x = Outcome, y = `Daily rate`)) +
-  geom_bar(stat = 'identity', fill = 'darkgreen', alpha = 0.6) +
+  geom_bar(stat = 'identity', fill = 'gold', alpha = 0.6) +
   xlab('Outcome of game') +
   ylab('Daily accidents') +
   bcn_data_theme
@@ -246,7 +246,7 @@ ggsave('/home/joebrew/Documents/bcndata.github.io/img/2015-11-30-Car-accidents-i
 
 # Catala
 wl_agg_ca <- wl_agg
-outcome_levels <- c('Perdre', 'No partit', 'Empat', 'Guanyar')
+outcome_levels <- c('Perdut', 'Sense partit', 'Empatat', 'Guanyat')
 wl_agg_ca$Outcome <- 
   outcome_levels
 wl_agg_ca$Outcome <- factor(
@@ -254,7 +254,7 @@ wl_agg_ca$Outcome <- factor(
   levels = outcome_levels 
 )
 ggplot(data = wl_agg_ca, aes(x = Outcome, y = `Daily rate`)) +
-  geom_bar(stat = 'identity', fill = 'darkgreen', alpha = 0.6) +
+  geom_bar(stat = 'identity', fill = 'gold', alpha = 0.6) +
   xlab('Resultat') +
   ylab('Accidents per dia') +
   bcn_data_theme
@@ -272,7 +272,7 @@ wl_agg_ca$Outcome <- factor(
   levels = outcome_levels 
 )
 ggplot(data = wl_agg_ca, aes(x = Outcome, y = `Daily rate`)) +
-  geom_bar(stat = 'identity', fill = 'darkgreen', alpha = 0.6) +
+  geom_bar(stat = 'identity', fill = 'gold', alpha = 0.6) +
   xlab('Resultado') +
   ylab('Accidentes por dia') +
   bcn_data_theme
@@ -286,7 +286,7 @@ ggsave('/home/joebrew/Documents/bcndata.github.io/img/2015-11-30-Car-accidents-i
 # ggplot(data = wl,
 #        aes(x = factor(outcome), y = accidents)) +
 #   geom_jitter(alpha = 0.7) +
-#   geom_violin(alpha = 0.5, fill = 'darkgreen') +
+#   geom_violin(alpha = 0.5, fill = 'gold') +
 #   xlab('Outcome of game') +
 #   ylab('Number of car accidents')
 
@@ -334,7 +334,7 @@ temp <- accidents %>%
 #        aes(x= factor(max_temp_bin),
 #            y = accidents)) +
 #   geom_jitter(alpha = 0.2) +
-#   geom_violin(fill = 'darkgreen', alpha = 0.2) +
+#   geom_violin(fill = 'gold', alpha = 0.2) +
 #   ylab('Accidents') +
 #   xlab('Maximum temperature (F)') +
 #   ggtitle('Daily car accidents in Barcelona by temperature')
@@ -347,7 +347,7 @@ temp <- accidents %>%
 #        aes(x = rainy,
 #            y = accidents)) +
 #   geom_jitter(alpha = 0.2) +
-#   geom_violin(fill = 'darkgreen', alpha = 0.2) +
+#   geom_violin(fill = 'gold', alpha = 0.2) +
 #   ylab('Accidents') +
 #   xlab('Raininess') +
 #   ggtitle('Daily car accidents in Barcelona by raininess')
@@ -457,7 +457,7 @@ temp <- accidents %>%
 
 # ENGLISH / Catalan
 ggplot(data = temp, aes(x = Date, y = n)) +
-  geom_bar(stat = 'identity', alpha = 0.5, fill = 'darkgreen') +
+  geom_bar(stat = 'identity', alpha = 0.5, fill = 'gold') +
   # geom_point() +
   # theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
   xlab('') +
@@ -470,7 +470,7 @@ ggsave('/home/joebrew/Documents/bcndata.github.io/img/2015-11-30-Car-accidents-i
 
 # SPANISH
 ggplot(data = temp, aes(x = Date, y = n)) +
-  geom_bar(stat = 'identity', alpha = 0.5, fill = 'darkgreen') +
+  geom_bar(stat = 'identity', alpha = 0.5, fill = 'gold') +
   # geom_point() +
   # theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
   xlab('') +
@@ -514,7 +514,7 @@ tod$n[is.na(tod$n)] <- 0
 
 ggplot(data = tod, aes(x = factor(Hora.de.dia), y = n)) +
   geom_jitter(alpha = 0.01) +
-  geom_violin(border = NA, fill = 'darkgreen', alpha = 0.6) +
+  geom_violin(border = NA, fill = 'gold', alpha = 0.6) +
   xlab('Hour of day') +
   ylab('Daily accidents')
 
@@ -549,7 +549,7 @@ tod_agg$Hora.de.dia <- factor(tod_agg$Hora.de.dia,
 
 ggplot(data = tod_agg,
        aes(x = as.numeric(Hora.de.dia), y = pmean)) +
-  geom_area(fill = 'darkgreen', alpha = 0.6) +
+  geom_area(fill = 'gold', alpha = 0.6) +
   xlab('Time of day') +
   ylab('Daily accidents') +
   bcn_data_theme +
@@ -561,7 +561,7 @@ ggsave('/home/joebrew/Documents/bcndata.github.io/img/2015-11-30-Car-accidents-i
 # CATALAN
 ggplot(data = tod_agg,
        aes(x = as.numeric(Hora.de.dia), y = pmean)) +
-  geom_area(fill = 'darkgreen', alpha = 0.6) +
+  geom_area(fill = 'gold', alpha = 0.6) +
   xlab('Hora del dia') +
   ylab('Accidents per dia') +
   bcn_data_theme +
@@ -572,7 +572,7 @@ ggsave('/home/joebrew/Documents/bcndata.github.io/img/2015-11-30-Car-accidents-i
 # ESPANOL
 ggplot(data = tod_agg,
        aes(x = as.numeric(Hora.de.dia), y = pmean)) +
-  geom_area(fill = 'darkgreen', alpha = 0.6) +
+  geom_area(fill = 'gold', alpha = 0.6) +
   xlab('Hora del dia') +
   ylab('Accidentes por dia') +
   bcn_data_theme +
@@ -605,7 +605,7 @@ dow$Descripció.dia.setmana <-
          labels = dow_dict$ca)
 
 ggplot(data = dow, aes(x = Descripció.dia.setmana, y = n / (365.25 * 4))) +
-  geom_bar(stat = 'identity', fill = 'darkgreen', alpha = 0.6) +
+  geom_bar(stat = 'identity', fill = 'gold', alpha = 0.6) +
   bcn_data_theme +
   # ggtitle('Stay off the road on Friday') +
   xlab('Dia de la setmana') +
@@ -620,7 +620,7 @@ dow$Descripció.dia.setmana <-
          labels = dow_dict$es)
 
 ggplot(data = dow, aes(x = Descripció.dia.setmana, y = n / (365.25 * 4))) +
-  geom_bar(stat = 'identity', fill = 'darkgreen', alpha = 0.6) +
+  geom_bar(stat = 'identity', fill = 'gold', alpha = 0.6) +
   bcn_data_theme +
   # ggtitle('Stay off the road on Friday') +
   xlab('Dia de la semana') +
@@ -636,7 +636,7 @@ dow$Descripció.dia.setmana <-
          labels = dow_dict$en)
 
 ggplot(data = dow, aes(x = Descripció.dia.setmana, y = n / (365.25 * 4))) +
-  geom_bar(stat = 'identity', fill = 'darkgreen', alpha = 0.6) +
+  geom_bar(stat = 'identity', fill = 'gold', alpha = 0.6) +
   bcn_data_theme +
   # ggtitle('Stay off the road on Friday') +
   xlab('Day of the week') +
@@ -711,7 +711,7 @@ ggplot() +
   geom_area(data = temp, aes(x = factor(day_hour),
                 y = n,
                 group = 1),
-            fill = 'darkgreen', alpha = 0.6) +
+            fill = 'gold', alpha = 0.6) +
   bcn_data_theme +
   xlab('Day of the week') +
   ylab('Accidents') +
@@ -792,7 +792,7 @@ ggplot() +
   geom_area(data = temp, aes(x = factor(day_hour),
                              y = n,
                              group = 1),
-            fill = 'darkgreen', alpha = 0.6) +
+            fill = 'gold', alpha = 0.6) +
   bcn_data_theme +
   xlab('Dia de la setmana') +
   ylab('Accidents') +
@@ -871,7 +871,7 @@ ggplot() +
   geom_area(data = temp, aes(x = factor(day_hour),
                              y = n,
                              group = 1),
-            fill = 'darkgreen', alpha = 0.6) +
+            fill = 'gold', alpha = 0.6) +
   bcn_data_theme +
   xlab('Dia de la semana') +
   ylab('Accidentes') +
