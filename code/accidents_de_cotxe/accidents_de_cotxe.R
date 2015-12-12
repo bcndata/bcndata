@@ -228,7 +228,7 @@ esp$outcome <- faespor(esp$outcome, levels = esp$outcome)
 ggplot(data = esp, aes(x = outcome, y = daily_rate)) +
   geom_bar(stat = 'identity', fill = 'gold', alpha = 0.6) +
   xlab('Resultado') +
-  ylab('Muertos por accidentes de coche por dia') +
+  ylab('Muertos por accidentes de coche por día') +
   bcn_data_theme
 ggsave('/home/joebrew/Documents/bcndata.github.io/img/2015-11-30-Car-accidents-in-Barcelona/deaths_es.JPG')
 
@@ -274,7 +274,7 @@ wl_agg_ca$Outcome <- factor(
 ggplot(data = wl_agg_ca, aes(x = Outcome, y = `Daily rate`)) +
   geom_bar(stat = 'identity', fill = 'gold', alpha = 0.6) +
   xlab('Resultado') +
-  ylab('Accidentes por dia') +
+  ylab('Accidentes por día') +
   bcn_data_theme
 ggsave('/home/joebrew/Documents/bcndata.github.io/img/2015-11-30-Car-accidents-in-Barcelona/football_es.JPG')
 
@@ -573,8 +573,8 @@ ggsave('/home/joebrew/Documents/bcndata.github.io/img/2015-11-30-Car-accidents-i
 ggplot(data = tod_agg,
        aes(x = as.numeric(Hora.de.dia), y = pmean)) +
   geom_area(fill = 'gold', alpha = 0.6) +
-  xlab('Hora del dia') +
-  ylab('Accidentes por dia') +
+  xlab('Hora del día') +
+  ylab('Accidentes por día') +
   bcn_data_theme +
   scale_x_discrete(labels = tod_agg$Hora.de.dia) +
   theme(axis.text.x = element_text(angle = 90, hjust = 1))
