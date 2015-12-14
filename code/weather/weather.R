@@ -21,7 +21,10 @@ source(paste0(root, '/lib/helpers.R'))
 ##### Get weather data
 
 # Define function for getting city's weather since 1996
-get_weather <- function(city = 'BCN'){
+get_weather <- function(city = 'BCN', description = NULL){
+  if(is.null(description)){
+    description <- city
+  }
   file_name <- paste0('weather_', tolower(city), '.csv')
   if(file_name %in% dir(data_dir)){
     assign(paste0('weather_', tolower(city)),
@@ -86,15 +89,17 @@ get_weather <- function(city = 'BCN'){
 }
 
 # Get weather for different locations
-get_weather('BCN')
-get_weather('FCO') # ROME
-get_weather('CDG') # PARIS
-get_weather('PAR') # PARIS
-get_weather('JFK') #NYC
-get_weather('MAD')
-get_weather('GRX')
-get_weather('LPA') # GRAN CANARIAS
-get_weather('ATH') # ATHENS
+get_weather('BCN', description = 'Barcelona')
+get_weather('FCO', description = 'Rome') # ROME
+get_weather('CDG', description = 'Paris') # PARIS
+# get_weather('PAR') # PARIS
+get_weather('JFK', description = 'New York') #NYC
+get_weather('MAD', description = 'Madrid')
+get_weather('GRX', description = 'Granada')
+get_weather('LPA', description = 'Gran Canarias') # GRAN CANARIAS
+get_weather('ATH', description = 'Athens') # ATHENS
+
+
 
 ##### SOME LANGUAGE DICTS
 
