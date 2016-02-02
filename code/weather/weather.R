@@ -132,6 +132,25 @@ rm(results_list, temp)
 ######## -------------------------------------------------------
 
 
+##### WEEKEND VS NON-WEEKEND WEATHER
+weekend <- function(language = 'en'){
+  bcn <- weather[weather$city == 'Barcelona',]
+  bcn$dow <- weekdays(bcn$date)
+  bcn$dow <- factor(bcn$dow,
+                    levels = c('Monday',
+                               'Tuesday',
+                               'Wednesday',
+                               'Thursday',
+                               'Friday',
+                               'Saturday',
+                               'Sunday'))
+  
+  temp <- 
+    bcn %>%
+    group_by(dow) %>%
+    summarise(cc = mean(CloudCover, na.rm = TRUE))
+}
+
 ##### PLOT ALL YEARS
 spain_plot <- function(language = 'es'){
   if(language == 'es'){
