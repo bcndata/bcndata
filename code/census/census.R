@@ -200,6 +200,15 @@ right <- genero %>%
     summarise(m = sum(TOTAL_POB[GENERO == 'HOMBRES']),
               f = sum(TOTAL_POB[GENERO == 'MUJERES']))
   
+# Collapse into only one map
+collapse_map <- function(x){
+  boundary <- unionSpatialPolygons(x, rep(1, length(x@polygons)))
+  return(boundary)
+}
+
+# Get a boundary of BCN
+boundary <- collapse_map(sec)
+
 # Bring all the data back into the spatial
 sec@data <- left_join(left, right); rm(left, right)
   
@@ -236,8 +245,9 @@ plot_gender <- function(language = 'en'){
     female_text <- ' més dones'
   }
   plot(sec, col = colors_vector, border = NA)
+  plot(boundary, add = T)
   
-  title(main = title_text)
+  title(main = title_text, cex.main = 2)
   
   legend_vector <- c(rev(colors_f), colors_m)
   legend_vector <- legend_vector[seq(10, 130, 10)]
@@ -251,23 +261,28 @@ plot_gender <- function(language = 'en'){
   legend(x = 'bottomleft',
          fill = legend_vector,
          legend = legend_label,
+         cex = 2,
          border = NA,
          ncol = 1,
          y.intersp = 0.5,
          bty = 'n',
-         text.col = adjustcolor(legend_vector, alpha.f = 0.6))
+         text.col = adjustcolor(legend_vector, alpha.f = 0.95))
 }
+h = 600 
+w = 900
+par(mar = c(0,0,0,0))
+par(oma = c(0,0,0,0))
 img_dir <- '/home/joebrew/Documents/bcndata.github.io/img/2016-02-06-gender/'
 png(filename = paste0(img_dir, 'map_en.png'),
-    height = 500, width = 700)
+    height = h, width = w)
 plot_gender('en')
 dev.off()
 png(filename = paste0(img_dir, 'map_ca.png'),
-    height = 500, width = 700)
+    height = h, width = w)
 plot_gender('ca')
 dev.off()
 png(filename = paste0(img_dir, 'map_es.png'),
-    height = 500, width = 700)
+    height = h, width = w)
 plot_gender('es')
 dev.off()
 
